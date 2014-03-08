@@ -3,6 +3,10 @@ import codex
 import exceptions
 import xml_render
 
+from saml2idp.saml2idp_metadata import SAML2IDP_REMOTES
+
+from fnmatch import fnmatch
+
 class Processor(base.Processor):
     """
         Apache 2.2 mod_shib2.
@@ -44,8 +48,8 @@ class Processor(base.Processor):
         """
         acs_url = self._request_params['ACS_URL']
 
-        for name, sp_config in saml2idp_metadata.SAML2IDP_REMOTES.items():
-            if acs_url == sp_config['acs_url']:
+        for name, sp_config in SAML2IDP_REMOTES.items():
+            if 'acs_url' in sp_config and acs_url == sp_config['acs_url']:
                 pass
             elif 'acs_url_glob' in sp_config and fnmatch(acs_url, sp_config['acs_url_glob']) :
                 pass
@@ -72,4 +76,4 @@ class Processor(base.Processor):
         """
             Build POST XML SAMLResponse to send to Apache.
         """
-        self._assertion_xml = xml_render._get_assertion_xml(self.ASSERTION, parameters, signed=True)
+        self._assertion_xml = xml_render._get_assertion_xml(self.ASSERTION, self._assertion_params, signed=True)
